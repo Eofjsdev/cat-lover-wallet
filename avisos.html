@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Avisos Cat Lover</title>
+<style>
+  :root {
+    --fondo: #17122b;
+    --panel: #241c45;
+    --texto: #f6f2ff;
+    --suave: #cfc6f5;
+    --acento: #6b4eff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--fondo);
+    color: var(--texto);
+    font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 24px;
+  }
+  main { width: min(100%, 420px); }
+  h1 { font-size: 1.5rem; margin: 8px 0 4px; }
+  .sub { margin: 0 0 20px; color: var(--suave); }
+  label { display: block; margin: 14px 0 6px; font-weight: 700; }
+  input[type="text"], input[type="password"], textarea {
+    width: 100%;
+    background: var(--panel);
+    color: var(--texto);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 12px;
+    font: inherit;
+  }
+  textarea { min-height: 120px; resize: vertical; }
+  input:focus-visible, textarea:focus-visible { outline: none; border-color: #ffd45e; }
+  .check { display: flex; gap: 10px; align-items: center; margin: 16px 0; font-weight: 400; }
+  .check input { width: 20px; height: 20px; }
+  button {
+    width: 100%;
+    background: var(--acento);
+    color: #fff;
+    border: 0;
+    border-radius: 999px;
+    padding: 14px;
+    font: inherit;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  button[disabled] { opacity: .6; cursor: wait; }
+  button:focus-visible { outline: 3px solid #ffd45e; outline-offset: 3px; }
+  #estado { min-height: 1.4em; margin-top: 14px; text-align: center; color: var(--suave); }
+  .nota { margin-top: 22px; font-size: .85rem; color: var(--suave); line-height: 1.4; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🐱 Avisos Cat Lover</h1>
+  <p class="sub">Escribe un mensaje y llegará a todas las tarjetas guardadas en Google Wallet.</p>
+
+  <label for="clave">Contraseña</label>
+  <input id="clave" type="password" autocomplete="current-password">
+
+  <label for="titulo">Título</label>
+  <input id="titulo" type="text" maxlength="100">
+
+  <label for="mensaje">Mensaje</label>
+  <textarea id="mensaje" maxlength="1000"></textarea>
+
+  <label class="check"><input id="notificar" type="checkbox"> Enviar también con notificación</label>
+
+  <button id="enviar" type="button">Enviar aviso</button>
+  <p id="estado" role="status"></p>
+
+  <p class="nota">El aviso aparece en la parte de atrás de la tarjeta. Con notificación, Google limita a 3 envíos, así que úsala solo para avisos importantes.</p>
+</main>
+
+<script>
+  const SUPABASE_URL = "https://xeongtzcemodcpfdzqws.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_IxRc3zvk4U-CffDnqNzAcQ_4UaoPCp3";
+  const NOMBRE_FUNCION = "enviar-aviso";
+
+  const boton = document.getElementById("enviar");
+  const estado = document.getElementById("estado");
+
+  boton.addEventListener("click", async () => {
+    const password = document.getElementById("clave").value;
+    const header = document.getElementById("titulo").value.trim();
+    const body = document.getElementById("mensaje").value.trim();
+    const notify = document.getElementById("notificar").checked;
+
+    if (!password || !header || !body) {
+      estado.textContent = "Llena la contraseña, el título y el mensaje.";
+      return;
+    }
+    boton.disabled = true;
+    estado.textContent = "Enviando…";
+    try {
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/${NOMBRE_FUNCION}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
+        body: JSON.stringify({ password, header, body, notify })
+      });
+      const datos = await r.json();
+      if (!r.ok) throw new Error(datos.error || "Error desconocido");
+      estado.textContent = "✅ Aviso enviado a las tarjetas.";
+      document.getElementById("titulo").value = "";
+      document.getElementById("mensaje").value = "";
+    } catch (e) {
+      estado.textContent = "No se pudo enviar: " + e.message;
+    } finally {
+      boton.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
