@@ -52,6 +52,11 @@
     font-size: 1rem;
     cursor: pointer;
   }
+  [hidden] { display: none !important; }
+  .zona-wallet { background: #fff; border-radius: 14px; padding: 12px; }
+  button.wallet { background: none; border: 0; padding: 0; border-radius: 0; line-height: 0; }
+  button.wallet img { display: block; height: 56px; width: auto; }
+  button.wallet.texto { background: #000; color: #fff; border-radius: 8px; padding: 16px 24px; line-height: 1.2; }
   button:focus-visible { outline: 3px solid #ffd45e; outline-offset: 3px; }
   button[disabled] { opacity: .6; cursor: wait; }
   #estado { min-height: 1.4em; margin: 0; color: var(--suave); text-align: center; max-width: 340px; }
@@ -71,7 +76,12 @@
     <span class="gato">🐱</span>
   </div>
 
-  <button id="agregar" type="button">Agregar a Google Wallet</button>
+  <div class="zona-wallet">
+    <button id="agregar" class="wallet" type="button" aria-label="Agregar a Google Wallet">
+      <img id="wallet-img" src="boton-wallet.svg" alt="Agregar a Google Wallet">
+      <span id="wallet-texto" hidden>Agregar a Google Wallet</span>
+    </button>
+  </div>
   <p id="estado" role="status"></p>
 
 <script>
@@ -105,6 +115,18 @@
       boton.disabled = false;
     }
   });
+
+  // Si todavía no subes el botón oficial (boton-wallet.svg), se muestra uno de texto negro.
+  const imgWallet = document.getElementById("wallet-img");
+  const textoWallet = document.getElementById("wallet-texto");
+  function usarRespaldo() {
+    imgWallet.hidden = true;
+    textoWallet.hidden = false;
+    boton.classList.add("texto");
+  }
+  imgWallet.addEventListener("error", usarRespaldo);
+  // por si la imagen ya falló antes de que corriera este código
+  if (imgWallet.complete && imgWallet.naturalWidth === 0) usarRespaldo();
 </script>
 </body>
 </html>
